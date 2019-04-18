@@ -1,0 +1,25 @@
+- name: 'install'
+  apt:
+    name: "postgresql{% if postgresql_version %}={{ postgresql_version }}{% endif %}"
+
+- name: 'add root'
+  become: yes
+  become_method: sudo
+  become_user: 'postgres'
+  no_log: true
+  postgresql_user:
+    user: "{{ postgresql_root }}"
+    password: "{{ postgresql_root_password }}"
+    role_attr_flags: SUPERUSER,CREATEDB,CREATEROLE
+  when: 'postgresql_root'
+
+- name: 'add users'
+  become: yes
+  become_method: sudo
+  become_user: 'postgres'
+  no_log: true
+  postgresql_user:
+    user: "{{ item.user }}"
+    password: "{{ item.password }}"
+    role_attr_flags: "{{ item.role_attr_flags }}"
+  with_items: "{{ postgresql_users }}"
